@@ -1,7 +1,10 @@
 package africa.semicolon.library.service;
 
 import africa.semicolon.library.config.KeycloakProvider;
-import africa.semicolon.library.data.dto.RegisterRequest;
+import africa.semicolon.library.data.dto.request.RegisterRequest;
+import africa.semicolon.library.data.model.Member;
+import africa.semicolon.library.data.model.User;
+import africa.semicolon.library.data.repository.UserRepository;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.resource.UsersResource;
@@ -11,9 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,16 @@ public class KeycloakAdminClient {
 
     @Autowired
     private KeycloakProvider kcProvider;
+
+    private final UserRepository userRepository;
+
+    public void createMember(RegisterRequest request){
+        User user = new Member();
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmailAddress(request.getEmailAddress());
+        userRepository.save(user);
+    }
 
     public Response createKeycloakUser(RegisterRequest request) {
         UsersResource usersResource = kcProvider.getInstance().realm(realm).users();
@@ -38,8 +49,9 @@ public class KeycloakAdminClient {
         kcUser.setEnabled(true);
         kcUser.setEmailVerified(false);
 
-        return usersResource.create(kcUser);
+        createMember(request);
 
+        return usersResource.create(kcUser);
     }
 
     private static CredentialRepresentation createPasswordCredentials(String password) {

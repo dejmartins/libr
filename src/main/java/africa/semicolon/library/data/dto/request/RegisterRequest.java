@@ -1,4 +1,4 @@
-package africa.semicolon.library.data.dto;
+package africa.semicolon.library.data.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;

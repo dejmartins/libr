@@ -1,8 +1,8 @@
 package africa.semicolon.library.controller;
 
 import africa.semicolon.library.config.KeycloakProvider;
-import africa.semicolon.library.data.dto.LoginRequest;
-import africa.semicolon.library.data.dto.RegisterRequest;
+import africa.semicolon.library.data.dto.request.LoginRequest;
+import africa.semicolon.library.data.dto.request.RegisterRequest;
 import africa.semicolon.library.service.KeycloakAdminClient;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.Response;

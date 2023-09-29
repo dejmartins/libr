@@ -3,7 +3,9 @@ package africa.semicolon.library.controller;
 import africa.semicolon.library.config.KeycloakProvider;
 import africa.semicolon.library.data.dto.request.LoginRequest;
 import africa.semicolon.library.data.dto.request.RegisterRequest;
-import africa.semicolon.library.service.KeycloakAdminClient;
+import africa.semicolon.library.data.dto.response.RegisterResponse;
+import africa.semicolon.library.data.dto.response.SuccessResponse;
+import africa.semicolon.library.service.AuthService;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.Response;
 import lombok.AllArgsConstructor;
@@ -23,16 +25,18 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class UserController {
 
-    private final KeycloakAdminClient kcAdminClient;
+    private final AuthService authService;
 
     private final KeycloakProvider kcProvider;
 
     private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping("/create")
-    public ResponseEntity<?> createUser(@RequestBody RegisterRequest user) {
-        Response createdResponse = kcAdminClient.createKeycloakUser(user);
-        return ResponseEntity.status(createdResponse.getStatus()).build();
+    public ResponseEntity<?> createUser(@RequestBody RegisterRequest request) {
+        SuccessResponse response = SuccessResponse.builder()
+                .data(authService.createMember(request))
+                .build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")

@@ -2,10 +2,9 @@ package africa.semicolon.library.service;
 
 import africa.semicolon.library.config.KeycloakProvider;
 import africa.semicolon.library.data.dto.request.RegisterRequest;
+import africa.semicolon.library.data.dto.response.RegisterResponse;
 import africa.semicolon.library.data.model.Member;
-import africa.semicolon.library.data.model.User;
 import africa.semicolon.library.data.repository.UserRepository;
-import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
@@ -15,10 +14,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
-public class KeycloakAdminClient {
+public class AuthService {
 
     @Value("${keycloak.realm}")
     public String realm;
@@ -28,15 +28,25 @@ public class KeycloakAdminClient {
 
     private final UserRepository userRepository;
 
-    public void createMember(RegisterRequest request){
-        User user = new Member();
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setEmailAddress(request.getEmailAddress());
-        userRepository.save(user);
+    public RegisterResponse createMember(RegisterRequest request){
+        Member member = new Member();
+        member.setDateOfMembership(new Date());
+        member.setFirstName(request.getFirstName());
+        member.setLastName(request.getLastName());
+        member.setEmailAddress(request.getEmailAddress());
+
+        createKeycloakUser(request);
+
+        userRepository.save(member);
+
+        return RegisterResponse.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmailAddress())
+                .build();
     }
 
-    public Response createKeycloakUser(RegisterRequest request) {
+    private void createKeycloakUser(RegisterRequest request) {
         UsersResource usersResource = kcProvider.getInstance().realm(realm).users();
         CredentialRepresentation credentialRepresentation = createPasswordCredentials(request.getPassword());
 
@@ -49,9 +59,7 @@ public class KeycloakAdminClient {
         kcUser.setEnabled(true);
         kcUser.setEmailVerified(false);
 
-        createMember(request);
-
-        return usersResource.create(kcUser);
+        usersResource.create(kcUser);
     }
 
     private static CredentialRepresentation createPasswordCredentials(String password) {

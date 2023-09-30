@@ -14,10 +14,7 @@ public abstract class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @NotBlank
     private String firstName;
-    @NotBlank
     private String lastName;
-    @NotBlank
     private String emailAddress;
 }

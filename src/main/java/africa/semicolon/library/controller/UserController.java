@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("api/v1/user")
 @AllArgsConstructor
@@ -32,7 +34,7 @@ public class UserController {
     private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping("/create")
-    public ResponseEntity<?> createUser(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> createUser(@Valid @RequestBody RegisterRequest request) {
         SuccessResponse response = SuccessResponse.builder()
                 .data(authService.createMember(request))
                 .build();

@@ -26,7 +26,8 @@ public class AuthService {
     @Autowired
     private KeycloakProvider kcProvider;
 
-    private final UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     public RegisterResponse createMember(RegisterRequest request){
         Member member = new Member();

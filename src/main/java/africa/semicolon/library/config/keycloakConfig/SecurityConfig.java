@@ -1,4 +1,4 @@
-package africa.semicolon.library.config;
+package africa.semicolon.library.config.keycloakConfig;
 
 import org.keycloak.adapters.springsecurity.KeycloakConfiguration;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;

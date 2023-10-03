@@ -1,4 +1,4 @@
-package africa.semicolon.library.config;
+package africa.semicolon.library.config.keycloakConfig;
 
 import org.keycloak.adapters.KeycloakConfigResolver;
 import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;

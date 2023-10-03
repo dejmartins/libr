@@ -1,13 +1,11 @@
 package africa.semicolon.library.controller;
 
-import africa.semicolon.library.config.KeycloakProvider;
+import africa.semicolon.library.config.keycloakConfig.KeycloakProvider;
 import africa.semicolon.library.data.dto.request.LoginRequest;
 import africa.semicolon.library.data.dto.request.RegisterRequest;
-import africa.semicolon.library.data.dto.response.RegisterResponse;
 import africa.semicolon.library.data.dto.response.SuccessResponse;
 import africa.semicolon.library.service.AuthService;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.Response;
 import lombok.AllArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.AccessTokenResponse;
@@ -23,20 +21,20 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("api/v1/user")
+@RequestMapping("api/v1/auth")
 @AllArgsConstructor
-public class UserController {
+public class AuthController {
 
     private final AuthService authService;
 
     private final KeycloakProvider kcProvider;
 
-    private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AuthController.class);
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createUser(@Valid @RequestBody RegisterRequest request) {
+    @PostMapping
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         SuccessResponse response = SuccessResponse.builder()
-                .data(authService.createMember(request))
+                .data(authService.register(request))
                 .build();
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

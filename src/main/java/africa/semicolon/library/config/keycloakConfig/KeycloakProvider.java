@@ -1,4 +1,4 @@
-package africa.semicolon.library.config;
+package africa.semicolon.library.config.keycloakConfig;
 
 import lombok.Getter;
 import org.keycloak.OAuth2Constants;

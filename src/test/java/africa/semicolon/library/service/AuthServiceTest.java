@@ -15,14 +15,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
@@ -53,15 +51,17 @@ class AuthServiceTest {
         request.setEmailAddress("johndoe@gmail.com");
         request.setPassword("john123@");
 
+        ReflectionTestUtils
+                .setField(authService, "realm", "Library");
         when(keycloakProvider.getInstance()).thenReturn(keycloak);
-        when(keycloak.realm(anyString())).thenReturn(realmResource);
+        when(keycloak.realm("Library")).thenReturn(realmResource);
         when(realmResource.users()).thenReturn(usersResource);
 
         Librarian librarian = modelMapper.map(request, Librarian.class);
         when(modelMapper.map(request, Librarian.class)).thenReturn(librarian);
 
         Librarian savedLibrarian = new Librarian();
-        when(userRepository.save(any(Librarian.class))).thenReturn(savedLibrarian);
+        when(userRepository.save(librarian)).thenReturn(savedLibrarian);
 
         authService.register(request);
 

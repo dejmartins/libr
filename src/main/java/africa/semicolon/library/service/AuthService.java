@@ -24,7 +24,7 @@ import java.util.Date;
 public class AuthService {
 
     @Value("${keycloak.realm}")
-    public String realm;
+    private String realm;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -71,7 +71,6 @@ public class AuthService {
 //    }
 
     private void createKeycloakUser(RegisterRequest request) {
-        System.out.println(realm);
         UsersResource usersResource = kcProvider.getInstance().realm(realm).users();
         CredentialRepresentation credentialRepresentation = createPasswordCredentials(request.getPassword());
 

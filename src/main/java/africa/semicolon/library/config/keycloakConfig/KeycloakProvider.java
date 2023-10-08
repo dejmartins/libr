@@ -37,7 +37,7 @@ public class KeycloakProvider {
         return keycloak;
     }
 
-    public KeycloakBuilder newKeycloakBuilderWithPasswordCredentials(String username, String password) {
+    public KeycloakBuilder newKeycloakBuilderWithCredentials(String username, String password) {
         return KeycloakBuilder.builder()
                 .realm(realm)
                 .serverUrl(serverURL)

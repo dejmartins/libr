@@ -7,8 +7,6 @@ import africa.semicolon.library.data.dto.response.SuccessResponse;
 import africa.semicolon.library.service.AuthService;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import org.keycloak.admin.client.Keycloak;
-import org.keycloak.representations.AccessTokenResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -40,17 +38,12 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AccessTokenResponse> login(@NotNull @RequestBody LoginRequest loginRequest) {
-        Keycloak keycloak = kcProvider.newKeycloakBuilderWithPasswordCredentials(loginRequest.getEmailAddress(), loginRequest.getPassword()).build();
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
+        SuccessResponse response = SuccessResponse.builder()
+                .data(authService.login(loginRequest))
+                .build();
 
-        AccessTokenResponse accessTokenResponse = null;
-        try {
-            accessTokenResponse = keycloak.tokenManager().getAccessToken();
-            return ResponseEntity.status(HttpStatus.OK).body(accessTokenResponse);
-        } catch (Exception ex) {
-            LOG.warn("invalid account. User probably hasn't verified email." + ex);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(accessTokenResponse);
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(response);
 
     }
 }

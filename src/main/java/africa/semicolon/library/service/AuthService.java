@@ -1,14 +1,17 @@
 package africa.semicolon.library.service;
 
 import africa.semicolon.library.config.keycloakConfig.KeycloakProvider;
+import africa.semicolon.library.data.dto.request.LoginRequest;
 import africa.semicolon.library.data.dto.request.RegisterRequest;
 import africa.semicolon.library.data.dto.response.RegisterResponse;
 import africa.semicolon.library.data.model.Librarian;
-import africa.semicolon.library.data.model.Member;
 import africa.semicolon.library.data.repository.UserRepository;
+import africa.semicolon.library.exception.loginException.InvalidLoginDetailsException;
 import africa.semicolon.library.exception.registrationException.DuplicateEmailRegistrationException;
 import lombok.RequiredArgsConstructor;
+import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.modelmapper.ModelMapper;
@@ -17,7 +20,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -55,20 +57,20 @@ public class AuthService {
                 .build();
     }
 
-//    public RegisterResponse registerMember(RegisterRequest request){
-//        Member member = modelMapper.map(request, Member.class);
-//        member.setDateOfMembership(new Date());
-//
-//        createKeycloakUser(request);
-//
-//        Member savedMember = userRepository.save(member);
-//
-//        return RegisterResponse.builder()
-//                .firstName(savedMember.getFirstName())
-//                .lastName(savedMember.getLastName())
-//                .email(savedMember.getEmailAddress())
-//                .build();
-//    }
+    public AccessTokenResponse login(LoginRequest loginRequest) throws InvalidLoginDetailsException {
+        Keycloak keycloak = kcProvider
+                .newKeycloakBuilderWithCredentials(loginRequest.getEmailAddress(), loginRequest.getPassword())
+                .build();
+
+        AccessTokenResponse accessTokenResponse;
+        accessTokenResponse = keycloak.tokenManager().getAccessToken();
+
+        if (accessTokenResponse == null){
+            throw new InvalidLoginDetailsException("Invalid Login Details");
+        }
+
+        return accessTokenResponse;
+    }
 
     private void createKeycloakUser(RegisterRequest request) {
         UsersResource usersResource = kcProvider.getInstance().realm(realm).users();

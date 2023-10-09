@@ -19,6 +19,10 @@ public class KeycloakProvider {
     public String clientID;
     @Value("${keycloak.credentials.secret}")
     public String clientSecret;
+    @Value("${my-keycloak.username}")
+    public String username;
+    @Value("${my-keycloak.password}")
+    public String password;
 
     private static Keycloak keycloak = null;
 
@@ -27,8 +31,8 @@ public class KeycloakProvider {
             keycloak = KeycloakBuilder.builder()
                     .realm(realm)
                     .serverUrl(serverURL)
-                    .username("dejmartins")
-                    .password("dejmartins")
+                    .username(username)
+                    .password(password)
                     .clientId(clientID)
                     .clientSecret(clientSecret)
                     .grantType(OAuth2Constants.PASSWORD)

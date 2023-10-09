@@ -3,12 +3,15 @@ package africa.semicolon.library.service;
 import africa.semicolon.library.config.keycloakConfig.KeycloakProvider;
 import africa.semicolon.library.data.dto.request.LoginRequest;
 import africa.semicolon.library.data.dto.request.RegisterRequest;
+import africa.semicolon.library.data.dto.response.KeycloakTokenResponse;
 import africa.semicolon.library.data.dto.response.RegisterResponse;
 import africa.semicolon.library.data.model.Librarian;
 import africa.semicolon.library.data.repository.UserRepository;
 import africa.semicolon.library.exception.loginException.InvalidLoginDetailsException;
 import africa.semicolon.library.exception.registrationException.DuplicateEmailRegistrationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import okhttp3.*;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.AccessTokenResponse;
@@ -19,14 +22,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-
-    @Value("${keycloak.realm}")
-    private String realm;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -57,7 +58,7 @@ public class AuthService {
                 .build();
     }
 
-    public AccessTokenResponse login(LoginRequest loginRequest) throws InvalidLoginDetailsException {
+    public AccessTokenResponse login(LoginRequest loginRequest) throws InvalidLoginDetailsException, IOException {
         Keycloak keycloak = kcProvider
                 .newKeycloakBuilderWithCredentials(loginRequest.getEmailAddress(), loginRequest.getPassword())
                 .build();
@@ -72,8 +73,32 @@ public class AuthService {
         return accessTokenResponse;
     }
 
+    public KeycloakTokenResponse getKeyCloakToken() throws IOException {
+        OkHttpClient okHttpClient = new OkHttpClient();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        RequestBody requestBody = new FormBody.Builder()
+                .add("grant_type", "password")
+                .add("client_id", kcProvider.clientID)
+                .add("username", kcProvider.username)
+                .add("password", kcProvider.password)
+                .add("client_secret", kcProvider.clientSecret)
+                .build();
+
+        Request request = new Request.Builder()
+                .url("http://localhost:8080/realms/Library/protocol/openid-connect/token")
+                .post(requestBody)
+                .build();
+
+        Response response = okHttpClient.newCall(request).execute();
+        KeycloakTokenResponse keycloakTokenResponse = objectMapper
+                .readValue(response.body().string(), KeycloakTokenResponse.class);
+
+        return keycloakTokenResponse;
+    }
+
     private void createKeycloakUser(RegisterRequest request) {
-        UsersResource usersResource = kcProvider.getInstance().realm(realm).users();
+        UsersResource usersResource = kcProvider.getInstance().realm(kcProvider.realm).users();
         CredentialRepresentation credentialRepresentation = createPasswordCredentials(request.getPassword());
 
         UserRepresentation kcUser = new UserRepresentation();

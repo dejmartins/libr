@@ -2,8 +2,10 @@ package africa.semicolon.library.service;
 
 import africa.semicolon.library.config.keycloakConfig.KeycloakProvider;
 import africa.semicolon.library.data.dto.request.LoginRequest;
+import africa.semicolon.library.data.dto.request.LogoutRequest;
 import africa.semicolon.library.data.dto.request.RegisterRequest;
 import africa.semicolon.library.data.dto.response.KeycloakTokenResponse;
+import africa.semicolon.library.data.dto.response.LogoutResponse;
 import africa.semicolon.library.data.dto.response.RegisterResponse;
 import africa.semicolon.library.data.model.Librarian;
 import africa.semicolon.library.data.repository.UserRepository;
@@ -19,7 +21,6 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -71,6 +72,10 @@ public class AuthService {
         }
 
         return accessTokenResponse;
+    }
+
+    public LogoutResponse logout(LogoutRequest logoutRequest){
+        return null;
     }
 
     public KeycloakTokenResponse getKeyCloakToken() throws IOException {

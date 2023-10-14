@@ -2,7 +2,6 @@ package africa.semicolon.library.service;
 
 import africa.semicolon.library.config.keycloakConfig.KeycloakProvider;
 import africa.semicolon.library.data.dto.request.LoginRequest;
-import africa.semicolon.library.data.dto.request.LogoutRequest;
 import africa.semicolon.library.data.dto.request.RegisterRequest;
 import africa.semicolon.library.data.dto.response.KeycloakTokenResponse;
 import africa.semicolon.library.data.dto.response.LogoutResponse;
@@ -10,6 +9,7 @@ import africa.semicolon.library.data.dto.response.RegisterResponse;
 import africa.semicolon.library.data.model.Librarian;
 import africa.semicolon.library.data.repository.UserRepository;
 import africa.semicolon.library.exception.loginException.InvalidLoginDetailsException;
+import africa.semicolon.library.exception.loginException.InvalidTokenException;
 import africa.semicolon.library.exception.registrationException.DuplicateEmailRegistrationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +59,7 @@ public class AuthService {
                 .build();
     }
 
-    public AccessTokenResponse login(LoginRequest loginRequest) throws InvalidLoginDetailsException, IOException {
+    public AccessTokenResponse login(LoginRequest loginRequest) throws InvalidLoginDetailsException {
         Keycloak keycloak = kcProvider
                 .newKeycloakBuilderWithCredentials(loginRequest.getEmailAddress(), loginRequest.getPassword())
                 .build();
@@ -74,7 +74,31 @@ public class AuthService {
         return accessTokenResponse;
     }
 
-    public LogoutResponse logout(LogoutRequest logoutRequest){
+    public LogoutResponse logout(String refreshToken) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        OkHttpClient okHttpClient = new OkHttpClient();
+
+        RequestBody requestBody = new FormBody.Builder()
+                .add("refresh_token", refreshToken)
+                .add("client_id", kcProvider.clientID)
+                .add("client_secret", kcProvider.clientSecret)
+                .build();
+
+        Request request = new Request.Builder()
+                .url("http://localhost:8080/realms/Library/protocol/openid-connect/logout")
+                .post(requestBody)
+                .build();
+
+        String response = okHttpClient.newCall(request)
+                .execute()
+                .body()
+                .string();
+
+        if (!response.isEmpty()) {
+            LogoutResponse logoutResponse = objectMapper.readValue(response, LogoutResponse.class);
+            throw new InvalidTokenException(logoutResponse.getErrorDescription());
+        }
+
         return null;
     }
 
@@ -88,6 +112,7 @@ public class AuthService {
                 .add("username", kcProvider.username)
                 .add("password", kcProvider.password)
                 .add("client_secret", kcProvider.clientSecret)
+                .add("scope", "openid")
                 .build();
 
         Request request = new Request.Builder()

@@ -35,6 +35,7 @@ public class KeycloakProvider {
                     .password(password)
                     .clientId(clientID)
                     .clientSecret(clientSecret)
+                    .scope("openid")
                     .grantType(OAuth2Constants.PASSWORD)
                     .build();
         }
@@ -47,6 +48,7 @@ public class KeycloakProvider {
                 .serverUrl(serverURL)
                 .clientId(clientID)
                 .clientSecret(clientSecret)
+                .scope("openid")
                 .username(username)
                 .password(password)
                 .grantType(OAuth2Constants.PASSWORD);

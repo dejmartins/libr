@@ -23,4 +23,6 @@ public class KeycloakTokenResponse {
     @JsonProperty("session_state")
     private String sessionState;
     private String scope;
+    @JsonProperty("id_token")
+    private String idToken;
 }

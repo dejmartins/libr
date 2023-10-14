@@ -12,8 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 
@@ -40,6 +38,16 @@ public class AuthController {
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) throws IOException {
         SuccessResponse response = SuccessResponse.builder()
                 .data(authService.login(loginRequest))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader("X-Refresh-Token") String refreshToken) throws IOException {
+
+        SuccessResponse response = SuccessResponse.builder()
+                .data(authService.logout(refreshToken))
                 .build();
 
         return ResponseEntity.status(HttpStatus.OK).body(response);

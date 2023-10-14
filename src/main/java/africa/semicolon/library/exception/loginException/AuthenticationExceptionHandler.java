@@ -25,7 +25,7 @@ public class AuthenticationExceptionHandler {
         ErrorResponse response = ErrorResponse.builder()
                 .error("Log 0002 - Invalid Grant")
                 .message(ex.getMessage())
-                .detail("Ensure that the token is correct and has not expired.")
+                .detail("Ensure that the token is correct.")
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);

@@ -4,6 +4,7 @@ import africa.semicolon.library.config.keycloakConfig.KeycloakProvider;
 import africa.semicolon.library.data.dto.request.LoginRequest;
 import africa.semicolon.library.data.dto.request.RegisterRequest;
 import africa.semicolon.library.data.dto.response.KeycloakTokenResponse;
+import africa.semicolon.library.data.dto.response.LogoutError;
 import africa.semicolon.library.data.dto.response.LogoutResponse;
 import africa.semicolon.library.data.dto.response.RegisterResponse;
 import africa.semicolon.library.data.model.Librarian;
@@ -21,6 +22,7 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -38,6 +40,12 @@ public class AuthService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Value("${my-keycloak.token.url}")
+    private String TOKEN_URL;
+
+    @Value("${my-keycloak.logout}")
+    private String LOGOUT;
 
     public RegisterResponse register(RegisterRequest request) {
         boolean emailExists = userRepository.existsByEmailAddress(request.getEmailAddress());
@@ -85,7 +93,7 @@ public class AuthService {
                 .build();
 
         Request request = new Request.Builder()
-                .url("http://localhost:8080/realms/Library/protocol/openid-connect/logout")
+                .url(LOGOUT)
                 .post(requestBody)
                 .build();
 
@@ -95,11 +103,12 @@ public class AuthService {
                 .string();
 
         if (!response.isEmpty()) {
-            LogoutResponse logoutResponse = objectMapper.readValue(response, LogoutResponse.class);
+            LogoutError logoutResponse = objectMapper.readValue(response, LogoutError.class);
             throw new InvalidTokenException(logoutResponse.getErrorDescription());
         }
 
-        return null;
+        return LogoutResponse.builder()
+                .logout(true).build();
     }
 
     public KeycloakTokenResponse getKeyCloakToken() throws IOException {
@@ -116,7 +125,7 @@ public class AuthService {
                 .build();
 
         Request request = new Request.Builder()
-                .url("http://localhost:8080/realms/Library/protocol/openid-connect/token")
+                .url(TOKEN_URL)
                 .post(requestBody)
                 .build();
 

@@ -15,31 +15,33 @@ import africa.semicolon.library.exception.registrationException.DuplicateEmailRe
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import okhttp3.*;
+import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.AccessTokenResponse;
+import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
-    @Autowired
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
-    @Autowired
-    private KeycloakProvider kcProvider;
+    private final KeycloakProvider kcProvider;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Value("${my-keycloak.token.url}")
     private String TOKEN_URL;
@@ -130,10 +132,9 @@ public class AuthService {
                 .build();
 
         Response response = okHttpClient.newCall(request).execute();
-        KeycloakTokenResponse keycloakTokenResponse = objectMapper
-                .readValue(response.body().string(), KeycloakTokenResponse.class);
 
-        return keycloakTokenResponse;
+        return objectMapper
+                .readValue(response.body().string(), KeycloakTokenResponse.class);
     }
 
     private void createKeycloakUser(RegisterRequest request) {
@@ -149,7 +150,25 @@ public class AuthService {
         kcUser.setEnabled(true);
         kcUser.setEmailVerified(false);
 
-        usersResource.create(kcUser);
+        jakarta.ws.rs.core.Response response = usersResource.create(kcUser);
+        addUserRole(response, usersResource);
+
+    }
+
+    private void addUserRole(jakarta.ws.rs.core.Response response, UsersResource usersResource) {
+        String userId = CreatedResponseUtil.getCreatedId(response);
+
+        RealmResource realmResource = kcProvider.getInstance().realm(kcProvider.realm);
+        ClientRepresentation clientRepresentation = realmResource.clients()
+                .findByClientId(kcProvider.clientID).get(0);
+
+        RoleRepresentation userClientRole = realmResource.clients().get(clientRepresentation.getId())
+                .roles().get("MEMBER").toRepresentation();
+
+        UserResource userResource = usersResource.get(userId);
+
+        userResource.roles()
+                .clientLevel(clientRepresentation.getId()).add(Arrays.asList(userClientRole));
     }
 
     private static CredentialRepresentation createPasswordCredentials(String password) {

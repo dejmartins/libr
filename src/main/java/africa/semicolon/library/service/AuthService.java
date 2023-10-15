@@ -151,11 +151,11 @@ public class AuthService {
         kcUser.setEmailVerified(false);
 
         jakarta.ws.rs.core.Response response = usersResource.create(kcUser);
-        addUserRole(response, usersResource);
+        addUserRole(response, usersResource, "MEMBER");
 
     }
 
-    private void addUserRole(jakarta.ws.rs.core.Response response, UsersResource usersResource) {
+    private void addUserRole(jakarta.ws.rs.core.Response response, UsersResource usersResource, String role) {
         String userId = CreatedResponseUtil.getCreatedId(response);
 
         RealmResource realmResource = kcProvider.getInstance().realm(kcProvider.realm);
@@ -163,7 +163,7 @@ public class AuthService {
                 .findByClientId(kcProvider.clientID).get(0);
 
         RoleRepresentation userClientRole = realmResource.clients().get(clientRepresentation.getId())
-                .roles().get("MEMBER").toRepresentation();
+                .roles().get(role).toRepresentation();
 
         UserResource userResource = usersResource.get(userId);
 
